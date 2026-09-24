@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 export function ConfirmDeleteButton({
   action,
   hiddenFields,
   label = "完全に削除",
+  confirmQuestion = "本当に削除しますか?",
+  confirmActionLabel = "削除する",
+  triggerSize = "sm",
 }: {
   action: (formData: FormData) => void;
   hiddenFields: Record<string, string>;
-  label?: string;
+  label?: ReactNode;
+  confirmQuestion?: string;
+  confirmActionLabel?: string;
+  triggerSize?: "sm" | "icon-sm";
 }) {
   const [confirming, setConfirming] = useState(false);
 
@@ -19,7 +25,7 @@ export function ConfirmDeleteButton({
       <Button
         type="button"
         variant="destructive"
-        size="sm"
+        size={triggerSize}
         onClick={() => setConfirming(true)}
       >
         {label}
@@ -32,9 +38,11 @@ export function ConfirmDeleteButton({
       {Object.entries(hiddenFields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <span className="text-destructive text-xs">本当に削除しますか?</span>
+      <span className="text-destructive text-xs whitespace-nowrap">
+        {confirmQuestion}
+      </span>
       <Button type="submit" variant="destructive" size="sm">
-        はい、完全に削除する
+        {confirmActionLabel}
       </Button>
       <Button
         type="button"

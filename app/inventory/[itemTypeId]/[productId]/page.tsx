@@ -66,6 +66,11 @@ export default async function ProductPage({
         <form action={deleteProduct}>
           <input type="hidden" name="id" value={product.id} />
           <input type="hidden" name="item_type_id" value={itemTypeId} />
+          <input
+            type="hidden"
+            name="redirect_to"
+            value={`/inventory/${itemTypeId}`}
+          />
           <Button type="submit" variant="destructive" size="sm">
             この商品を削除
           </Button>

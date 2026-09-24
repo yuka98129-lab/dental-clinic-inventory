@@ -139,6 +139,7 @@ export default async function TrashPage() {
                         ? { id: entry.id }
                         : { id: entry.id, item_type_id: entry.itemTypeId }
                     }
+                    confirmActionLabel="はい、完全に削除する"
                   />
                 </div>
               </div>

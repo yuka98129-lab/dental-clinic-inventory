@@ -148,6 +148,7 @@ export async function updateStock(formData: FormData) {
 export async function deleteProduct(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const itemTypeId = String(formData.get("item_type_id") ?? "");
+  const redirectTo = formData.get("redirect_to");
 
   if (!id) return;
 
@@ -159,11 +160,69 @@ export async function deleteProduct(formData: FormData) {
 
   revalidatePath("/inventory");
   revalidatePath("/inventory/trash");
-  if (itemTypeId) {
-    revalidatePath(`/inventory/${itemTypeId}`);
-    redirect(`/inventory/${itemTypeId}`);
+  if (itemTypeId) revalidatePath(`/inventory/${itemTypeId}`);
+
+  // Only navigate away when explicitly asked to (e.g. deleting from the
+  // product's own detail page) — deleting inline from a list should just
+  // remove the row in place and keep the user where they were.
+  if (typeof redirectTo === "string" && redirectTo) {
+    redirect(redirectTo);
   }
-  redirect("/inventory");
+}
+
+export async function updateProductField(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const itemTypeId = String(formData.get("item_type_id") ?? "");
+  const field = String(formData.get("field") ?? "");
+  const rawValue = formData.get("value");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  const updatedAt = new Date().toISOString();
+
+  switch (field) {
+    case "unit": {
+      const unit = String(rawValue ?? "").trim();
+      if (!unit) return;
+      await supabase
+        .from("products")
+        .update({ unit, updated_at: updatedAt })
+        .eq("id", id);
+      break;
+    }
+    case "low_stock_threshold": {
+      const lowStockThreshold = Number(rawValue ?? 0);
+      if (Number.isNaN(lowStockThreshold)) return;
+      await supabase
+        .from("products")
+        .update({ low_stock_threshold: lowStockThreshold, updated_at: updatedAt })
+        .eq("id", id);
+      break;
+    }
+    case "storage_location": {
+      const storageLocation = String(rawValue ?? "").trim();
+      await supabase
+        .from("products")
+        .update({ storage_location: storageLocation || null, updated_at: updatedAt })
+        .eq("id", id);
+      break;
+    }
+    case "notes": {
+      const notes = String(rawValue ?? "").trim();
+      await supabase
+        .from("products")
+        .update({ notes: notes || null, updated_at: updatedAt })
+        .eq("id", id);
+      break;
+    }
+    default:
+      return;
+  }
+
+  if (itemTypeId) revalidatePath(`/inventory/${itemTypeId}`);
+  revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
 }
 
 export async function restoreProduct(formData: FormData) {
