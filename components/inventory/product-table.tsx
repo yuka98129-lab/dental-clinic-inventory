@@ -13,29 +13,15 @@ import {
 } from "@/components/ui/table";
 import type { Product } from "@/lib/types/database";
 
-export type ProductRow = Product & {
-  itemTypeName?: string;
-  itemTypeCategory?: string;
-};
-
-export function ProductTable({
-  products,
-  showItemType = false,
-  emptyMessage = "登録されている商品がありません。",
-}: {
-  products: ProductRow[];
-  showItemType?: boolean;
-  emptyMessage?: string;
-}) {
+export function ProductTable({ products }: { products: Product[] }) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {showItemType && <TableHead>品目 / カテゴリー</TableHead>}
           <TableHead>商品名</TableHead>
           <TableHead>単位</TableHead>
           <TableHead>在庫数</TableHead>
-          <TableHead>閾値</TableHead>
+          <TableHead>発注点</TableHead>
           <TableHead>状態</TableHead>
           <TableHead className="text-right">数量更新</TableHead>
         </TableRow>
@@ -43,39 +29,29 @@ export function ProductTable({
       <TableBody>
         {products.map((product) => {
           const isLow = product.current_stock <= product.low_stock_threshold;
+          const detailHref = `/inventory/${product.item_type_id}/${product.id}`;
           return (
             <TableRow key={product.id}>
-              {showItemType && (
-                <TableCell>
-                  <Link
-                    href={`/inventory/${product.item_type_id}`}
-                    className="hover:underline"
-                  >
-                    <div className="font-medium">{product.itemTypeName}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {product.itemTypeCategory}
-                    </div>
-                  </Link>
-                </TableCell>
-              )}
               <TableCell className="font-medium">
-                <div>{product.name}</div>
-                {(product.manufacturer || product.storage_location) && (
-                  <div className="text-muted-foreground text-xs font-normal">
-                    {[
-                      product.manufacturer && `メーカー: ${product.manufacturer}`,
-                      product.storage_location &&
-                        `保管場所: ${product.storage_location}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" / ")}
-                  </div>
-                )}
-                {product.notes && (
-                  <div className="text-muted-foreground text-xs font-normal">
-                    備考: {product.notes}
-                  </div>
-                )}
+                <Link href={detailHref} className="hover:underline">
+                  <div>{product.name}</div>
+                  {(product.manufacturer || product.storage_location) && (
+                    <div className="text-muted-foreground text-xs font-normal">
+                      {[
+                        product.manufacturer && `メーカー: ${product.manufacturer}`,
+                        product.storage_location &&
+                          `保管場所: ${product.storage_location}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </div>
+                  )}
+                  {product.notes && (
+                    <div className="text-muted-foreground text-xs font-normal">
+                      備考: {product.notes}
+                    </div>
+                  )}
+                </Link>
               </TableCell>
               <TableCell>{product.unit}</TableCell>
               <TableCell>{product.current_stock}</TableCell>
@@ -117,11 +93,8 @@ export function ProductTable({
         })}
         {products.length === 0 && (
           <TableRow>
-            <TableCell
-              colSpan={showItemType ? 7 : 6}
-              className="text-muted-foreground text-center"
-            >
-              {emptyMessage}
+            <TableCell colSpan={6} className="text-muted-foreground text-center">
+              登録されている商品がありません。
             </TableCell>
           </TableRow>
         )}

@@ -59,7 +59,7 @@ export default async function ItemTypePage({
 
       {lowStockCount > 0 && (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          {lowStockCount}件の商品が在庫閾値を下回っています。
+          {lowStockCount}件の商品が発注点を下回っています。
         </div>
       )}
 
@@ -97,7 +97,7 @@ export default async function ItemTypePage({
             <Input
               type="number"
               name="low_stock_threshold"
-              placeholder="閾値"
+              placeholder="発注点"
               min={0}
               step="any"
               defaultValue={0}
