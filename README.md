@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 歯科医院 在庫管理システム
 
-## Getting Started
+歯科医院向けの、消耗品在庫管理システムです。カテゴリー・品目・個別商品の3階層で在庫を整理し、閾値を下回った商品をアラート表示します。
 
-First, run the development server:
+## 概要
+
+多くの歯科医院では、日々の忙しさから消耗品の在庫切れに気づけないという課題があります。本プロジェクトは、その課題を解決する軽量な在庫管理機能のMVP(最小限の実用製品)です。
+
+- 「カテゴリー(大分類)→ 品目 → 個別商品」の3階層で消耗品を管理
+- 品目名・商品名・カテゴリー名から横断的に検索
+- 在庫数が閾値を下回った商品を一覧・詳細どちらの画面でもアラート表示
+- ホーム画面から各商品の在庫数をその場で直接編集可能
+
+予約管理・患者管理・スタッフログインなどの機能は今回のスコープ外です(将来的な拡張として`requirements.md`に記載)。
+
+## 技術スタック
+
+- [Next.js](https://nextjs.org/)(App Router, TypeScript)
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- [Supabase](https://supabase.com/)(Postgres, Row Level Security)
+- [Vercel](https://vercel.com/)(想定ホスティング先)
+
+## 主な機能
+
+- **在庫一覧・検索**(`/inventory`): カテゴリーごとに商品を一覧表示。品目名・商品名・カテゴリー名での検索に対応。
+- **在庫数のインライン編集**: 一覧画面上で直接、在庫数を更新可能(詳細画面への遷移不要)。
+- **閾値アラート**: 在庫数が閾値以下になった商品を、一覧・詳細の両画面でハイライト表示。
+- **品目・商品の登録**(`/inventory/[itemTypeId]`): 品目ごとの商品一覧と、メーカー・保管場所・備考を含む商品登録フォーム。
+
+## セットアップ
+
+```bash
+npm install
+```
+
+`.env.local` に Supabase の接続情報を設定してください(このファイルはコミットされません):
+
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+DBスキーマは Supabase の SQL Editor 上で `item_types` / `products` テーブルを作成して用意します(詳細は `CLAUDE.md` を参照)。
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## その他のコマンド
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run build` — 本番ビルド
+- `npm run lint` — ESLint
+- `npx tsc --noEmit` — 型チェック
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ドキュメント
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `requirements.md` — 要件定義書(日本語)
+- `CLAUDE.md` — 現在のアーキテクチャ・データモデル・既知の制約(セキュリティ上の暫定対応など)
