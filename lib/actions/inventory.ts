@@ -158,6 +158,7 @@ export async function deleteProduct(formData: FormData) {
     .eq("id", id);
 
   revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
   if (itemTypeId) {
     revalidatePath(`/inventory/${itemTypeId}`);
     redirect(`/inventory/${itemTypeId}`);
@@ -174,8 +175,47 @@ export async function restoreProduct(formData: FormData) {
   const supabase = createSupabaseServerClient();
   await supabase.from("products").update({ deleted_at: null }).eq("id", id);
 
+  if (itemTypeId) {
+    // If the parent item type is still (soft-)deleted, restore it too —
+    // otherwise the restored product would be invisible under a hidden item type.
+    await supabase
+      .from("item_types")
+      .update({ deleted_at: null })
+      .eq("id", itemTypeId)
+      .not("deleted_at", "is", null);
+    revalidatePath(`/inventory/${itemTypeId}`);
+  }
+
   revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
+}
+
+export async function permanentlyDeleteProduct(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const itemTypeId = String(formData.get("item_type_id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  await supabase.from("products").delete().eq("id", id);
+
+  revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
   if (itemTypeId) revalidatePath(`/inventory/${itemTypeId}`);
+}
+
+export async function permanentlyDeleteItemType(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  // `products.item_type_id` has `on delete cascade`, so this also removes
+  // (permanently) any products still attached to this item type.
+  await supabase.from("item_types").delete().eq("id", id);
+
+  revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
 }
 
 export async function deleteItemType(formData: FormData) {
@@ -194,6 +234,7 @@ export async function deleteItemType(formData: FormData) {
     .is("deleted_at", null);
 
   revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
   redirect("/inventory");
 }
 
@@ -223,5 +264,6 @@ export async function restoreItemType(formData: FormData) {
   }
 
   revalidatePath("/inventory");
+  revalidatePath("/inventory/trash");
   revalidatePath(`/inventory/${id}`);
 }

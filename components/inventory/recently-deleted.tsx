@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { restoreItemType, restoreProduct } from "@/lib/actions/inventory";
 import { Button } from "@/components/ui/button";
@@ -82,8 +83,14 @@ export async function RecentlyDeleted() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex items-center justify-between">
         <CardTitle className="text-base">最近削除した項目</CardTitle>
+        <Link
+          href="/inventory/trash"
+          className="text-muted-foreground text-xs hover:underline"
+        >
+          🗑️ ゴミ箱ですべて見る
+        </Link>
       </CardHeader>
       <CardContent className="space-y-2">
         {entries.map((entry) => (
