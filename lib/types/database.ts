@@ -7,18 +7,21 @@ export interface Database {
           category: string;
           name: string;
           created_at: string;
+          deleted_at: string | null;
         };
         Insert: {
           id?: string;
           category: string;
           name: string;
           created_at?: string;
+          deleted_at?: string | null;
         };
         Update: {
           id?: string;
           category?: string;
           name?: string;
           created_at?: string;
+          deleted_at?: string | null;
         };
         Relationships: [];
       };
@@ -35,6 +38,7 @@ export interface Database {
           notes: string | null;
           created_at: string;
           updated_at: string;
+          deleted_at: string | null;
         };
         Insert: {
           id?: string;
@@ -48,6 +52,7 @@ export interface Database {
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
         };
         Update: {
           id?: string;
@@ -61,6 +66,7 @@ export interface Database {
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
         };
         Relationships: [];
       };

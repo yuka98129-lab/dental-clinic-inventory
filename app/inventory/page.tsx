@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ItemTypeSection } from "@/components/inventory/item-type-section";
+import { RecentlyDeleted } from "@/components/inventory/recently-deleted";
 import type { ItemType, Product } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -26,8 +27,13 @@ export default async function InventoryPage({
   const supabase = createSupabaseServerClient();
   const [{ data: itemTypes, error: itemTypesError }, { data: products }] =
     await Promise.all([
-      supabase.from("item_types").select("*").order("category").order("name"),
-      supabase.from("products").select("*"),
+      supabase
+        .from("item_types")
+        .select("*")
+        .is("deleted_at", null)
+        .order("category")
+        .order("name"),
+      supabase.from("products").select("*").is("deleted_at", null),
     ]);
 
   const productsByItemType = new Map<string, Product[]>();
@@ -71,6 +77,8 @@ export default async function InventoryPage({
           {lowStockProductCount}件の商品が要発注です。
         </div>
       )}
+
+      <RecentlyDeleted />
 
       <form className="flex gap-2">
         <Input

@@ -144,3 +144,84 @@ export async function updateStock(formData: FormData) {
   if (itemTypeId) revalidatePath(`/inventory/${itemTypeId}`);
   revalidatePath("/inventory");
 }
+
+export async function deleteProduct(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const itemTypeId = String(formData.get("item_type_id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  await supabase
+    .from("products")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
+
+  revalidatePath("/inventory");
+  if (itemTypeId) {
+    revalidatePath(`/inventory/${itemTypeId}`);
+    redirect(`/inventory/${itemTypeId}`);
+  }
+  redirect("/inventory");
+}
+
+export async function restoreProduct(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const itemTypeId = String(formData.get("item_type_id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  await supabase.from("products").update({ deleted_at: null }).eq("id", id);
+
+  revalidatePath("/inventory");
+  if (itemTypeId) revalidatePath(`/inventory/${itemTypeId}`);
+}
+
+export async function deleteItemType(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  const deletedAt = new Date().toISOString();
+
+  await supabase.from("item_types").update({ deleted_at: deletedAt }).eq("id", id);
+  await supabase
+    .from("products")
+    .update({ deleted_at: deletedAt })
+    .eq("item_type_id", id)
+    .is("deleted_at", null);
+
+  revalidatePath("/inventory");
+  redirect("/inventory");
+}
+
+export async function restoreItemType(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) return;
+
+  const supabase = createSupabaseServerClient();
+  const { data: itemType } = await supabase
+    .from("item_types")
+    .select("deleted_at")
+    .eq("id", id)
+    .single();
+
+  await supabase.from("item_types").update({ deleted_at: null }).eq("id", id);
+
+  // Restore products that were soft-deleted at the same moment as the item
+  // type (i.e. deleted as part of this same cascade), not ones a user
+  // deleted individually before the item type itself was removed.
+  if (itemType?.deleted_at) {
+    await supabase
+      .from("products")
+      .update({ deleted_at: null })
+      .eq("item_type_id", id)
+      .eq("deleted_at", itemType.deleted_at);
+  }
+
+  revalidatePath("/inventory");
+  revalidatePath(`/inventory/${id}`);
+}

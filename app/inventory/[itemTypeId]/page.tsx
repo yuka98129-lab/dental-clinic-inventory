@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { addProduct } from "@/lib/actions/inventory";
+import { addProduct, deleteItemType } from "@/lib/actions/inventory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ProductTable } from "@/components/inventory/product-table";
+import { RecentlyDeleted } from "@/components/inventory/recently-deleted";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +25,17 @@ export default async function ItemTypePage({
 
   const [{ data: itemType }, { data: products, error: productsError }] =
     await Promise.all([
-      supabase.from("item_types").select("*").eq("id", itemTypeId).single(),
+      supabase
+        .from("item_types")
+        .select("*")
+        .eq("id", itemTypeId)
+        .is("deleted_at", null)
+        .single(),
       supabase
         .from("products")
         .select("*")
         .eq("item_type_id", itemTypeId)
+        .is("deleted_at", null)
         .order("name"),
     ]);
 
@@ -40,16 +47,27 @@ export default async function ItemTypePage({
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
-      <div>
-        <Link
-          href="/inventory"
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          ← 在庫一覧に戻る
-        </Link>
-        <h1 className="mt-1 text-2xl font-bold">{itemType.name}</h1>
-        <p className="text-muted-foreground text-sm">{itemType.category}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <Link
+            href="/inventory"
+            className="text-muted-foreground text-sm hover:underline"
+          >
+            ← 在庫一覧に戻る
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold">{itemType.name}</h1>
+          <p className="text-muted-foreground text-sm">{itemType.category}</p>
+        </div>
+        <form action={deleteItemType}>
+          <input type="hidden" name="id" value={itemType.id} />
+          <Button type="submit" variant="destructive" size="sm">
+            この品目を削除
+          </Button>
+        </form>
       </div>
+      <p className="text-muted-foreground -mt-4 text-xs">
+        品目を削除すると、登録されている商品もまとめて削除されます(削除後は「元に戻す」から復元できます)。
+      </p>
 
       {productsError && (
         <p className="text-destructive text-sm">
@@ -62,6 +80,8 @@ export default async function ItemTypePage({
           {lowStockCount}件の商品が要発注です。
         </div>
       )}
+
+      <RecentlyDeleted />
 
       <Card>
         <CardHeader>
