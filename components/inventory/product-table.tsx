@@ -21,7 +21,7 @@ export function ProductTable({ products }: { products: Product[] }) {
           <TableHead>商品名</TableHead>
           <TableHead>単位</TableHead>
           <TableHead>在庫数</TableHead>
-          <TableHead>発注点</TableHead>
+          <TableHead>必要な数</TableHead>
           <TableHead>状態</TableHead>
           <TableHead className="text-right">数量更新</TableHead>
         </TableRow>
@@ -58,9 +58,9 @@ export function ProductTable({ products }: { products: Product[] }) {
               <TableCell>{product.low_stock_threshold}</TableCell>
               <TableCell>
                 {isLow ? (
-                  <Badge variant="destructive">在庫少</Badge>
+                  <Badge variant="destructive">要発注</Badge>
                 ) : (
-                  <Badge variant="secondary">正常</Badge>
+                  <Badge variant="secondary">在庫あり</Badge>
                 )}
               </TableCell>
               <TableCell className="text-right">

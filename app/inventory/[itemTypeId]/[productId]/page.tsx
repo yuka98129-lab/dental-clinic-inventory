@@ -43,9 +43,9 @@ export default async function ProductPage({
         <div className="mt-1 flex items-center gap-2">
           <h1 className="text-2xl font-bold">{product.name}</h1>
           {isLow ? (
-            <Badge variant="destructive">在庫少</Badge>
+            <Badge variant="destructive">要発注</Badge>
           ) : (
-            <Badge variant="secondary">正常</Badge>
+            <Badge variant="secondary">在庫あり</Badge>
           )}
         </div>
         <p className="text-muted-foreground text-sm">
@@ -74,7 +74,7 @@ export default async function ProductPage({
               <Input name="unit" defaultValue={product.unit} required />
             </label>
             <label className="grid gap-1 text-sm">
-              在庫数
+              現在の在庫数
               <Input
                 type="number"
                 name="current_stock"
@@ -84,7 +84,10 @@ export default async function ProductPage({
               />
             </label>
             <label className="grid gap-1 text-sm">
-              発注点
+              必要な数(発注の目安)
+              <span className="text-muted-foreground text-xs">
+                この数より在庫が少なくなったら「要発注」と表示されます
+              </span>
               <Input
                 type="number"
                 name="low_stock_threshold"

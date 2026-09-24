@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { addItemType } from "@/lib/actions/inventory";
+import { addItemTypeWithProduct } from "@/lib/actions/inventory";
 import { CATEGORIES } from "@/lib/constants";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +18,9 @@ export const dynamic = "force-dynamic";
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; category?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, category: preselectedCategory } = await searchParams;
   const query = (q ?? "").trim();
 
   const supabase = createSupabaseServerClient();
@@ -68,7 +68,7 @@ export default async function InventoryPage({
 
       {lowStockProductCount > 0 && (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          {lowStockProductCount}件の商品が発注点を下回っています。
+          {lowStockProductCount}件の商品が要発注です。
         </div>
       )}
 
@@ -96,7 +96,7 @@ export default async function InventoryPage({
           <CardContent className="space-y-4">
             {matchedItemTypes.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                該当する品目が見つかりませんでした。下の「新規品目の登録」から追加できます。
+                該当する品目が見つかりませんでした。下の「新規品目・商品の登録」から追加できます。
               </p>
             ) : (
               matchedItemTypes.map((it) => (
@@ -124,6 +124,12 @@ export default async function InventoryPage({
                   {categoryItemTypes.length === 0 ? (
                     <p className="text-muted-foreground text-sm">
                       登録されている品目がありません。
+                      <Link
+                        href={`/inventory?category=${encodeURIComponent(category)}#new-item-form`}
+                        className="ml-1 underline"
+                      >
+                        このカテゴリーに品目・商品を登録する
+                      </Link>
                     </p>
                   ) : (
                     categoryItemTypes.map((it) => (
@@ -141,34 +147,88 @@ export default async function InventoryPage({
         </div>
       )}
 
-      <Card>
+      <Card id="new-item-form">
         <CardHeader>
-          <CardTitle>新規品目の登録</CardTitle>
+          <CardTitle>新規品目・商品の登録</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={addItemType} className="grid gap-3 sm:grid-cols-4">
-            <select
-              name="category"
-              required
-              defaultValue=""
-              className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
-            >
-              <option value="" disabled>
-                カテゴリーを選択
-              </option>
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+          <form
+            action={addItemTypeWithProduct}
+            className="grid gap-4 sm:grid-cols-2"
+          >
+            <label className="grid gap-1 text-sm">
+              カテゴリー
+              <select
+                key={preselectedCategory ?? "none"}
+                name="category"
+                required
+                defaultValue={preselectedCategory ?? ""}
+                className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
+              >
+                <option value="" disabled>
+                  カテゴリーを選択
                 </option>
-              ))}
-            </select>
-            <Input
-              name="name"
-              placeholder="品目名(例: 歯ブラシ)"
-              required
-              className="sm:col-span-2"
-            />
-            <Button type="submit">追加</Button>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm">
+              品目名
+              <Input name="item_type_name" placeholder="例: 歯ブラシ" required />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              商品名
+              <Input
+                name="product_name"
+                placeholder="例: 〇〇歯科医院用A"
+                required
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              単位
+              <Input name="unit" placeholder="例: 本" required />
+            </label>
+            <label className="grid gap-1 text-sm">
+              現在の在庫数
+              <Input
+                type="number"
+                name="current_stock"
+                min={0}
+                step="any"
+                defaultValue={0}
+              />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              必要な数(発注の目安)
+              <span className="text-muted-foreground text-xs">
+                この数より在庫が少なくなったら「要発注」と表示されます
+              </span>
+              <Input
+                type="number"
+                name="low_stock_threshold"
+                min={0}
+                step="any"
+                defaultValue={0}
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              メーカー(任意)
+              <Input name="manufacturer" />
+            </label>
+            <label className="grid gap-1 text-sm">
+              保管場所(任意)
+              <Input name="storage_location" />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              備考(任意)
+              <Input name="notes" />
+            </label>
+            <Button type="submit" className="sm:col-span-2 sm:w-fit">
+              登録
+            </Button>
           </form>
         </CardContent>
       </Card>

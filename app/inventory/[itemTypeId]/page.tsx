@@ -59,7 +59,7 @@ export default async function ItemTypePage({
 
       {lowStockCount > 0 && (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          {lowStockCount}件の商品が発注点を下回っています。
+          {lowStockCount}件の商品が要発注です。
         </div>
       )}
 
@@ -77,39 +77,52 @@ export default async function ItemTypePage({
           <CardTitle>新規商品の登録</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={addProduct} className="grid gap-3 sm:grid-cols-5">
+          <form action={addProduct} className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="item_type_id" value={itemTypeId} />
-            <Input
-              name="name"
-              placeholder="商品名(例: 〇〇歯科医院用A)"
-              required
-              className="sm:col-span-2"
-            />
-            <Input name="unit" placeholder="単位(例: 本)" required />
-            <Input
-              type="number"
-              name="current_stock"
-              placeholder="初期在庫数"
-              min={0}
-              step="any"
-              defaultValue={0}
-            />
-            <Input
-              type="number"
-              name="low_stock_threshold"
-              placeholder="発注点"
-              min={0}
-              step="any"
-              defaultValue={0}
-            />
-            <Input name="manufacturer" placeholder="メーカー(任意)" />
-            <Input name="storage_location" placeholder="保管場所(任意)" />
-            <Input
-              name="notes"
-              placeholder="備考(任意)"
-              className="sm:col-span-3"
-            />
-            <Button type="submit" className="sm:col-span-5 sm:w-fit">
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              商品名
+              <Input name="name" placeholder="例: 〇〇歯科医院用A" required />
+            </label>
+            <label className="grid gap-1 text-sm">
+              単位
+              <Input name="unit" placeholder="例: 本" required />
+            </label>
+            <label className="grid gap-1 text-sm">
+              現在の在庫数
+              <Input
+                type="number"
+                name="current_stock"
+                min={0}
+                step="any"
+                defaultValue={0}
+              />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              必要な数(発注の目安)
+              <span className="text-muted-foreground text-xs">
+                この数より在庫が少なくなったら「要発注」と表示されます
+              </span>
+              <Input
+                type="number"
+                name="low_stock_threshold"
+                min={0}
+                step="any"
+                defaultValue={0}
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              メーカー(任意)
+              <Input name="manufacturer" />
+            </label>
+            <label className="grid gap-1 text-sm">
+              保管場所(任意)
+              <Input name="storage_location" />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              備考(任意)
+              <Input name="notes" />
+            </label>
+            <Button type="submit" className="sm:col-span-2 sm:w-fit">
               追加
             </Button>
           </form>
